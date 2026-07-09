@@ -3,20 +3,22 @@ let githubRepoSlug = localStorage.getItem('cicd_dashboard_repo') || 'Mohanrajp05
 let countdownSecs = 30;
 let refreshIntervalId = null;
 let countdownIntervalId = null;
+let latestRunData = null; // Stored for Live Demo telemetry panel
 
 // DOM Elements
-const repoSlugInput = document.getElementById('repo-slug-input');
-const saveRepoBtn = document.getElementById('save-repo-btn');
-const manualRefreshBtn = document.getElementById('manual-refresh-btn');
-const liveVersionSha = document.getElementById('live-version-sha');
-const runsTableBody = document.getElementById('runs-table-body');
-const systemStatusBanner = document.getElementById('system-status-banner');
-const statusIndicatorDot = document.getElementById('status-indicator-dot');
-const statusHeadline = document.getElementById('status-headline');
-const statusSubline = document.getElementById('status-subline');
-const syncTimerText = document.getElementById('sync-timer-text');
+const repoSlugInput   = document.getElementById('repo-slug-input');
+const saveRepoBtn     = document.getElementById('save-repo-btn');
+const manualRefreshBtn= document.getElementById('manual-refresh-btn');
+const liveDemoBtn     = document.getElementById('live-demo-btn');
+const liveVersionSha  = document.getElementById('live-version-sha');
+const runsTableBody   = document.getElementById('runs-table-body');
+const systemStatusBanner  = document.getElementById('system-status-banner');
+const statusIndicatorDot  = document.getElementById('status-indicator-dot');
+const statusHeadline      = document.getElementById('status-headline');
+const statusSubline       = document.getElementById('status-subline');
+const syncTimerText   = document.getElementById('sync-timer-text');
 const syncProgressBar = document.getElementById('sync-progress-bar');
-const currentRepoLabel = document.getElementById('current-repo-label');
+const currentRepoLabel= document.getElementById('current-repo-label');
 
 // Initialize Configuration Panel
 repoSlugInput.value = githubRepoSlug;
@@ -34,6 +36,15 @@ saveRepoBtn.addEventListener('click', () => {
 manualRefreshBtn.addEventListener('click', () => {
   triggerTelemetrySync();
 });
+
+// Live Demo Button
+if (liveDemoBtn) {
+  liveDemoBtn.addEventListener('click', () => {
+    if (window.PipelineDemo) {
+      window.PipelineDemo.open(latestRunData);
+    }
+  });
+}
 
 // Format duration helper
 function formatDuration(startedAt, updatedAt) {
@@ -224,6 +235,9 @@ async function triggerTelemetrySync() {
 
     runsTableBody.innerHTML = tableHtml;
     
+    // Cache latest run for Live Demo panel
+    latestRunData = slicedRuns[0] || null;
+
     // Update the banner based on the latest run (index 0)
     updateStatusBanner(slicedRuns[0]);
 

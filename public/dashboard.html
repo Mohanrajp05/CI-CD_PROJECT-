@@ -112,9 +112,21 @@
               <h3 class="font-bold text-slate-200">GitHub Actions Run Telemetry</h3>
               <p class="text-xs text-slate-400 mt-1" id="current-repo-label">Target repository: loading...</p>
             </div>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-mono" id="run-count">
-              Last 15 runs
-            </span>
+            <div class="flex items-center gap-3">
+              <!-- Live Demo Button -->
+              <button id="live-demo-btn"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs tracking-wide
+                       bg-gradient-to-r from-indigo-600 to-violet-600 text-white
+                       shadow-lg shadow-indigo-600/30
+                       hover:from-indigo-500 hover:to-violet-500
+                       active:scale-95 transition-all duration-150"
+                title="Open an animated step-by-step CI/CD pipeline demo">
+                <span style="font-size:14px;line-height:1">▶</span> Live Demo
+              </button>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-mono" id="run-count">
+                Last 15 runs
+              </span>
+            </div>
           </div>
 
           <!-- Table Container -->
@@ -156,7 +168,8 @@
     </div>
   </footer>
 
-  <!-- Script reference -->
+  <!-- Script references -->
+  <script src="/pipeline-demo.js"></script>
   <script src="/dashboard.js"></script>
 </body>
 </html>
