@@ -70,9 +70,19 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/cicd-pipeline-demo:${{ steps.git_info.outputs.sha_short }}
 
       - name: Trigger Webhook-based Render Deployment
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
           echo "Initiating production web-service deployment trigger..."
-          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          if [ -z "$RENDER_HOOK" ]; then
+            echo "========================================================================"
+            echo "❌ ERROR: RENDER_DEPLOY_HOOK secret is empty or not configured!"
+            echo "Please go to Settings -> Secrets and variables -> Actions in GitHub"
+            echo "and ensure RENDER_DEPLOY_HOOK is added under Repository Secrets."
+            echo "========================================================================"
+            exit 1
+          fi
+          curl -f -X POST "$RENDER_HOOK"
           echo "Render deployment hook successfully called."
 
       - name: Output Summary Logs
