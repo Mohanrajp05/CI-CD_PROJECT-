@@ -3,7 +3,7 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
   res.json({
-    status: 'ok',
+    status: 'broken',
     timestamp: new Date().toISOString()
   });
 });
