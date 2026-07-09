@@ -1,5 +1,5 @@
 // Configuration State
-let githubRepoSlug = localStorage.getItem('cicd_dashboard_repo') || 'saimtabani/cicd-pipeline-demo';
+let githubRepoSlug = localStorage.getItem('cicd_dashboard_repo') || 'Mohanrajp05/CI-CD_PROJECT-';
 let countdownSecs = 30;
 let refreshIntervalId = null;
 let countdownIntervalId = null;
