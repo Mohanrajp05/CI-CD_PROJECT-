@@ -70,10 +70,15 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/cicd-pipeline-demo:${{ steps.git_info.outputs.sha_short }}
 
       - name: Trigger Webhook-based Render Deployment
+        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
         run: |
           echo "Initiating production web-service deployment trigger..."
           curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
           echo "Render deployment hook successfully called."
+
+      - name: Skip Render Deployment Trigger (hook not configured)
+        if: ${{ secrets.RENDER_DEPLOY_HOOK == '' }}
+        run: echo "RENDER_DEPLOY_HOOK is not configured. Skipping Render deployment trigger."
 
       - name: Output Summary Logs
         run: |
