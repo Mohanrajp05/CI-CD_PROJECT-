@@ -1,0 +1,33 @@
+/* Additional premium styles for the CI/CD Dashboard application */
+
+/* custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Custom transitions and animation definitions */
+.transition-all-300 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base custom focuses */
+input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px #4f46e5;
+}

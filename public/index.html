@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CI/CD Demo Application</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col font-sans select-none overflow-x-hidden">
+
+  <!-- Header -->
+  <header class="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <!-- CI/CD Logo representation -->
+        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold tracking-tight shadow-lg shadow-indigo-600/30">
+          ∞
+        </span>
+        <div>
+          <span class="font-bold tracking-tight text-white block text-sm sm:text-base leading-none">PIPELINE_OPS <span class="text-slate-500 font-normal">/ AUTOMATED-APP</span></span>
+          <span class="text-[10px] text-slate-400 font-mono tracking-wider uppercase">v1.0.0-release</span>
+        </div>
+      </div>
+      <nav class="flex items-center space-x-6">
+        <a href="/" class="text-xs font-bold uppercase tracking-wider text-indigo-400 border-b-2 border-indigo-500 px-1 py-4.5">Home</a>
+        <a href="/dashboard" class="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-indigo-400 px-1 py-4.5 transition-colors">Pipeline Dashboard</a>
+        <a href="/health" target="_blank" class="text-xs font-mono bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 px-2.5 py-1.5 rounded border border-emerald-500/30 transition-colors uppercase tracking-widest">Health: OK ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Hero Header -->
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono uppercase tracking-widest bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 mb-4 animate-pulse">
+        ● App Version Verified Live
+      </span>
+      <h1 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+        CI/CD Demonstration Web Application
+      </h1>
+      <p class="mt-4 text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
+        This lightweight application is automatically tested, bundled inside a Docker container, pushed to Docker Hub, and deployed live to hosting via GitHub Actions workflows on every commit.
+      </p>
+    </div>
+
+    <!-- Live Status Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <!-- Status Card 1 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl transition-all duration-300 hover:border-slate-700/50">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Deployment Host</span>
+          <span class="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+        </div>
+        <p class="text-2xl font-semibold text-slate-100">Render</p>
+        <p class="text-xs text-slate-400 mt-2 font-mono" id="current-hostname">Loading environment...</p>
+      </div>
+
+      <!-- Status Card 2 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl transition-all duration-300 hover:border-slate-700/50">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Active Commit SHA</span>
+          <span class="text-slate-500">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </span>
+        </div>
+        <p class="text-2xl font-semibold font-mono text-indigo-400 truncate" id="deployed-sha">...</p>
+        <p class="text-xs text-slate-400 mt-2">Baked in during multi-stage Docker build</p>
+      </div>
+
+      <!-- Status Card 3 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl transition-all duration-300 hover:border-slate-700/50">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">System Latency</span>
+          <span class="text-emerald-400 text-xs font-mono font-medium">Healthy</span>
+        </div>
+        <p class="text-2xl font-semibold text-slate-100" id="response-time">-- ms</p>
+        <p class="text-xs text-slate-400 mt-2">Measured via health API fetch ping</p>
+      </div>
+    </div>
+
+    <!-- Section: The Pipeline Stages -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl mb-12">
+      <h2 class="text-2xl font-bold text-white mb-2">Automated Pipeline Walkthrough</h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">When a developer pushes changes to the repository, our automated GitHub Actions workflow triggers the following rigorous pipeline stages:</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+        <!-- Stage 1 -->
+        <div class="relative pl-12">
+          <div class="absolute left-0 top-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 h-8 w-8 rounded-full flex items-center justify-center font-bold font-mono text-sm">
+            1
+          </div>
+          <h3 class="font-semibold text-slate-200 text-lg">Rigorous Testing</h3>
+          <p class="text-slate-400 text-sm mt-1">Jest and Supertest inspect key route status codes, health responses, and SHA version payloads to protect against regressions.</p>
+        </div>
+
+        <!-- Stage 2 -->
+        <div class="relative pl-12">
+          <div class="absolute left-0 top-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 h-8 w-8 rounded-full flex items-center justify-center font-bold font-mono text-sm">
+            2
+          </div>
+          <h3 class="font-semibold text-slate-200 text-lg">Code Quality Guard</h3>
+          <p class="text-slate-400 text-sm mt-1">ESLint parses files to identify syntax discrepancies, trailing styles, and runtime flaws before proceeding.</p>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="relative pl-12">
+          <div class="absolute left-0 top-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 h-8 w-8 rounded-full flex items-center justify-center font-bold font-mono text-sm">
+            3
+          </div>
+          <h3 class="font-semibold text-slate-200 text-lg">Bake Commit SHA</h3>
+          <p class="text-slate-400 text-sm mt-1">The workflow reads the triggering commit SHA, passing it as a build argument (`GIT_SHA`) directly into the Dockerfile compiler.</p>
+        </div>
+
+        <!-- Stage 4 -->
+        <div class="relative pl-12">
+          <div class="absolute left-0 top-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 h-8 w-8 rounded-full flex items-center justify-center font-bold font-mono text-sm">
+            4
+          </div>
+          <h3 class="font-semibold text-slate-200 text-lg">Multi-Stage Docker</h3>
+          <p class="text-slate-400 text-sm mt-1">The app compiles within a minimal Alpine environment, separating builders from runtime nodes to produce an ultra-slim container image.</p>
+        </div>
+
+        <!-- Stage 5 -->
+        <div class="relative pl-12">
+          <div class="absolute left-0 top-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 h-8 w-8 rounded-full flex items-center justify-center font-bold font-mono text-sm">
+            5
+          </div>
+          <h3 class="font-semibold text-slate-200 text-lg">Registry Push</h3>
+          <p class="text-slate-400 text-sm mt-1">Authenticates and pushes two fully tagged builds (`latest` and `$SHA`) directly to your public Docker Hub registry.</p>
+        </div>
+
+        <!-- Stage 6 -->
+        <div class="relative pl-12">
+          <div class="absolute left-0 top-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 h-8 w-8 rounded-full flex items-center justify-center font-bold font-mono text-sm">
+            6
+          </div>
+          <h3 class="font-semibold text-slate-200 text-lg">Render Deploy Hook</h3>
+          <p class="text-slate-400 text-sm mt-1">An automated POST request triggers Render to retrieve the fresh Docker image, initiating zero-downtime rolling service deployment.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Banner -->
+    <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl text-white p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between">
+      <div class="mb-6 md:mb-0 text-center md:text-left">
+        <h2 class="text-xl font-bold">Monitor the Active Pipeline Status</h2>
+        <p class="text-slate-300 text-sm mt-1">See live build outcomes, triggers, durations, and commit histories on our dashboard.</p>
+      </div>
+      <a href="/dashboard" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-sm font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/20">
+        Go to Live Dashboard →
+      </a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 border-t border-slate-800 py-8 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs uppercase tracking-widest text-slate-500 font-bold">
+      <p>© 2026 CI/CD Pipeline Demonstration Dashboard. Developed as a full-stack, automated deployment portfolio.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Fetch live system statistics
+    async function updateSystemStats() {
+      const startTime = performance.now();
+      try {
+        // Fetch health endpoint
+        const healthResponse = await fetch('/health');
+        const healthData = await healthResponse.json();
+        const endTime = performance.now();
+        const latency = Math.round(endTime - startTime);
+        
+        document.getElementById('response-time').textContent = `${latency} ms`;
+        document.getElementById('current-hostname').textContent = window.location.hostname || 'Localhost';
+      } catch (err) {
+        document.getElementById('response-time').textContent = 'Error';
+        document.getElementById('response-time').classList.add('text-rose-500');
+      }
+
+      try {
+        // Fetch API version endpoint
+        const versionResponse = await fetch('/api/version');
+        const versionData = await versionResponse.json();
+        const shaText = versionData.version;
+        const displaySha = shaText.length > 8 ? shaText.substring(0, 8) : shaText;
+        document.getElementById('deployed-sha').textContent = displaySha;
+        document.getElementById('deployed-sha').setAttribute('title', shaText);
+      } catch (err) {
+        document.getElementById('deployed-sha').textContent = 'dev-local';
+      }
+    }
+
+    // Run on load
+    updateSystemStats();
+  </script>
+</body>
+</html>

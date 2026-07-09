@@ -1,0 +1,6 @@
+{
+  "name": "CI/CD Pipeline Dashboard",
+  "description": "A live pipeline dashboard and demo web application showing automated build, test, and deployment status from GitHub Actions, Docker Hub, and Render.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
