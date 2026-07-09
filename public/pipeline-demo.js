@@ -49,6 +49,7 @@
   let currentStep=0, paused=false;
   let stepTimer=null, loopTimer=null;
   let latestRun=null;
+  let isComplete=false;           // true only after all stages finish
   let modal=null, svgEl=null, infoPanel=null;
 
   /* ── Helpers ──────────────────────────────────────────────────────── */
@@ -208,11 +209,25 @@
   }
 
   /* ── Info panel ───────────────────────────────────────────────────── */
-  function updatePanel(step){
+  // isDone=true only when all animation steps have fully completed
+  function updatePanel(step, isDone){
     if(!infoPanel) return;
     const r=latestRun;
-    const stage=SEQUENCE[step]?.activate.join(' + ')||'Complete';
-    const pct=Math.round(((step+1)/SEQUENCE.length)*100);
+    const stage = isDone ? 'Pipeline Complete' : (SEQUENCE[step]?.activate.join(' + ')||'Complete');
+    const pct   = isDone ? 100 : Math.round(((step+1)/SEQUENCE.length)*100);
+
+    // Result: only reveal after demo completes, otherwise show animated placeholder
+    let resultHtml = '';
+    if(r){
+      if(isDone){
+        const col = r.conclusion==='success'?'#34d399': r.conclusion==='failure'?'#fb7185':'#818cf8';
+        const icon= r.conclusion==='success'?'✓ ': r.conclusion==='failure'?'✕ ':'';
+        resultHtml = `<div class="ir"><span class="il">Result</span><span class="iv" style="color:${col};font-weight:700">${icon}${r.conclusion||r.status||'—'}</span></div>`;
+      } else {
+        resultHtml = `<div class="ir"><span class="il">Result</span><span class="iv" style="color:#475569;font-style:italic">⏳ running…</span></div>`;
+      }
+    }
+
     infoPanel.innerHTML=`
       <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#475569;font-weight:700;margin-bottom:10px;">📡 Live Run Telemetry</div>
       ${r?`
@@ -220,16 +235,16 @@
         <div class="ir"><span class="il">Branch</span><span class="iv" style="background:rgba(99,102,241,.15);color:#a5b4fc;padding:1px 6px;border-radius:4px;font-size:10px">${r.head_branch}</span></div>
         <div class="ir"><span class="il">Trigger</span><span class="iv">${(r.event||'').replace('_',' ')}</span></div>
         <div class="ir"><span class="il">Commit</span><span class="iv" style="font-family:'JetBrains Mono',monospace;color:#818cf8">${(r.head_sha||'').substring(0,7)||'—'}</span></div>
-        <div class="ir"><span class="il">Result</span><span class="iv" style="color:${r.conclusion==='success'?'#34d399':r.conclusion==='failure'?'#fb7185':'#818cf8'}">${r.conclusion||r.status||'—'}</span></div>
+        ${resultHtml}
       `:`<div style="color:#334155;font-size:10px;margin-bottom:10px;">No live data available</div>`}
       <div style="border-top:1px solid #1e293b;margin:10px 0"></div>
-      <div class="ir"><span class="il">Stage</span><span class="iv" style="color:#818cf8">${stage}</span></div>
+      <div class="ir"><span class="il">Stage</span><span class="iv" style="color:${isDone?'#34d399':'#818cf8'}">${stage}</span></div>
       <div style="margin-top:8px">
         <div style="display:flex;justify-content:space-between;font-size:9px;color:#334155;margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">
           <span>Progress</span><span>${pct}%</span>
         </div>
         <div style="background:#080e1a;border-radius:4px;height:5px;overflow:hidden">
-          <div style="background:linear-gradient(90deg,#6366f1,#818cf8);height:100%;width:${pct}%;border-radius:4px;transition:width .5s ease"></div>
+          <div style="background:${isDone?'linear-gradient(90deg,#10b981,#34d399)':'linear-gradient(90deg,#6366f1,#818cf8)'};height:100%;width:${pct}%;border-radius:4px;transition:width .5s ease"></div>
         </div>
       </div>`;
   }
@@ -250,7 +265,7 @@
     step.activate.forEach(id=>{ nodeStates[id]='running'; });
     step.edges.forEach(id=>{ edgeStates[id]='active'; });
 
-    renderEdges(); renderNodes(); updatePanel(currentStep);
+    renderEdges(); renderNodes(); updatePanel(currentStep, false);
     currentStep++;
 
     if(currentStep<SEQUENCE.length){
@@ -259,7 +274,8 @@
       stepTimer=setTimeout(()=>{
         SEQUENCE[currentStep-1].activate.forEach(id=>{ nodeStates[id]='success'; });
         SEQUENCE[currentStep-1].edges.forEach(id=>{ edgeStates[id]='success'; });
-        renderEdges(); renderNodes(); updatePanel(currentStep-1);
+        isComplete=true;   // ← animation fully done — now reveal real Result
+        renderEdges(); renderNodes(); updatePanel(currentStep-1, true);
         loopTimer=setTimeout(()=>{ if(!paused) restart(); }, 2800);
       }, step.dur);
     }
@@ -268,7 +284,8 @@
   function restart(){
     clearTimeout(stepTimer); clearTimeout(loopTimer);
     currentStep=0; nodeStates={}; edgeStates={};
-    renderEdges(); renderNodes(); updatePanel(0);
+    isComplete=false;   // ← reset so Result hides again on new loop
+    renderEdges(); renderNodes(); updatePanel(0, false);
     advanceStep();
   }
 
@@ -420,10 +437,11 @@
       currentStep = 0;
       nodeStates  = {};
       edgeStates  = {};
+      isComplete  = false;   // ← always start fresh, Result hidden
       document.body.style.overflow='hidden';
       buildModal();
       buildSVG();
-      updatePanel(0);
+      updatePanel(0, false);
       setTimeout(()=>advanceStep(), 350);
     },
     close: closeDemo,
